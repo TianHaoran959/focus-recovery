@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 344px; font-family: -apple-system,"PingFang SC","Microsoft YaHei",sans-serif; color:#1f2937;
+    background:linear-gradient(180deg,#fef3c7 0%,#fed7aa 30%,#fecaca 60%,#ddd6fe 100%); padding:14px; min-height:520px; }
+  h1 { font-size:16px; display:flex; align-items:center; gap:8px; letter-spacing:.3px; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.15); margin-bottom:12px; font-weight:700; }
+  h1 svg { width:22px; height:22px; }
+
+  /* ===== 主界面 ===== */
+  .main-view { display:block; }
+  .state-box { position:relative; background:rgba(255,255,255,.25); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.4); border-radius:20px; padding:18px 14px 16px; margin:0 0 12px;
+    text-align:center; box-shadow:0 8px 32px rgba(139,92,246,.15); overflow:hidden; }
+  .state-box::before { content:''; position:absolute; left:-50%; top:-50%; width:200%; height:200%;
+    background:radial-gradient(circle at 30% 20%, rgba(251,146,60,.2), transparent 50%),
+               radial-gradient(circle at 70% 80%, rgba(139,92,246,.15), transparent 50%);
+    pointer-events:none; }
+  .ring-wrap { position:relative; width:110px; height:110px; margin:0 auto 8px; }
+  .ring-wrap svg { width:110px; height:110px; transform:rotate(-90deg); }
+  .ring-bg { fill:none; stroke:rgba(255,255,255,.3); stroke-width:8; }
+  .ring-fg { fill:none; stroke:url(#ringGrad); stroke-width:8; stroke-linecap:round; transition:stroke-dashoffset .6s linear; filter:drop-shadow(0 2px 6px rgba(249,115,22,.4)); }
+  .ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .remain { font-size:28px; font-weight:300; color:#fff; font-variant-numeric:tabular-nums; letter-spacing:1px; line-height:1;
+    text-shadow:0 2px 8px rgba(0,0,0,.15); }
+  .state-txt { font-size:12px; color:rgba(255,255,255,.9); margin-top:4px; letter-spacing:1px; }
+
+  .line { display:flex; gap:8px; align-items:center; margin:8px 0; }
+  select,input[type=number]{ padding:10px 12px; border:1px solid rgba(255,255,255,.5); border-radius:12px; font-size:13px;
+    background:rgba(255,255,255,.4); backdrop-filter:blur(10px); color:#1f2937; outline:none; transition:all .15s; font-weight:500; }
+  select:focus,input:focus{ border-color:rgba(249,115,22,.6); box-shadow:0 0 0 3px rgba(249,115,22,.15); background:rgba(255,255,255,.55); }
+  select { flex:1; }
+  select option { background:#fff; color:#1f2937; }
+
+  .btn { border:none; border-radius:14px; padding:13px 0; font-size:15px; font-weight:700; cursor:pointer; flex:1; transition:filter .15s,transform .08s,box-shadow .15s; }
+  .btn:active { transform:scale(.98); }
+  .btn.primary { background:linear-gradient(135deg,#fb923c,#f97316); color:#fff; box-shadow:0 4px 16px rgba(249,115,22,.4); }
+  .btn.primary:hover { filter:brightness(1.08); box-shadow:0 6px 20px rgba(249,115,22,.5); }
+  .btn.ghost { background:rgba(255,255,255,.4); backdrop-filter:blur(10px); color:#7c2d12; border:1px solid rgba(255,255,255,.5); font-size:13px; padding:11px 0; }
+  .btn.ghost:hover { background:rgba(255,255,255,.55); }
+  .btn.warn { background:rgba(254,226,226,.7); color:#991b1b; border:1px solid rgba(254,202,202,.6); font-size:13px; padding:11px 0; }
+  .btn.warn:hover { background:rgba(254,226,226,.9); }
+
+  /* ===== 扑克牌扇形展开 ===== */
+  .fan-section { margin-top:16px; }
+  .fan-title { font-size:12px; color:#7c2d12; font-weight:600; margin-bottom:12px; text-align:center; opacity:.8; }
+  .fan-cards { position:relative; height:170px; display:flex; justify-content:center; align-items:flex-end; }
+  .fan-card { position:absolute; width:100px; height:155px; background:rgba(255,255,255,.5); backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.7); border-radius:14px; padding:14px 8px; cursor:pointer;
+    box-shadow:0 4px 16px rgba(139,92,246,.15); transition:transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s, background .3s, opacity .3s; display:flex; flex-direction:column;
+    align-items:center; gap:6px; transform-origin:center center; will-change:transform; }
+  /* 悬停即激活：保持倾斜角度与位置，只放大、浮到图层最上方、背景提亮（无需点击摆正） */
+  .fan-card:hover { transform:scale(1.14) var(--base-transform) !important; z-index:20 !important;
+    box-shadow:0 18px 44px rgba(249,115,22,.4); background:rgba(255,255,255,.82); }
+  .fan-card .icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; transition:transform .3s; }
+  .fan-card:hover .icon { transform:scale(1.08); }
+  .fan-card .icon svg { width:20px; height:20px; }
+  .fan-card .title { font-size:13px; font-weight:700; color:#7c2d12; text-align:center; line-height:1.2; }
+  .fan-card .desc { font-size:10px; color:#9a3412; opacity:.85; text-align:center; line-height:1.6; width:100%; }
+  /* 文字默认每个独占一行 */
+  .fan-card .desc .key { display:block; padding:2px 4px; margin:1px 0; border-radius:4px; }
+  /* 悬停该牌时，文字直接成为可点击按键（省去点击摆正这一步） */
+  .fan-card:hover .desc .key { padding:5px 8px; margin:3px 0; border-radius:7px; cursor:pointer;
+    background:rgba(251,146,60,.15); border:1px solid rgba(251,146,60,.3); transition:all .15s; font-weight:600; font-size:10px; }
+  .fan-card:hover .desc .key:hover { background:rgba(251,146,60,.32); border-color:rgba(251,146,60,.65); transform:scale(1.05); box-shadow:0 2px 8px rgba(249,115,22,.2); }
+  .fan-card:hover .desc .key:active { transform:scale(.96); }
+  /* 某张牌被悬停时，其余牌自动变暗（:has 选择器，Chrome 已支持） */
+  .fan-cards:has(.fan-card:hover) .fan-card:not(:hover) { opacity:.32; filter:grayscale(.3); }
+  .fan-card:nth-child(1) { --base-transform: rotate(-14deg) translateX(-78px); --angle:-14deg; --tx:-78px; transform:rotate(-14deg) translateX(-78px); z-index:1; }
+  .fan-card:nth-child(2) { --base-transform: rotate(-5deg) translateX(-26px); --angle:-5deg; --tx:-26px; transform:rotate(-5deg) translateX(-26px); z-index:2; }
+  .fan-card:nth-child(3) { --base-transform: rotate(5deg) translateX(26px); --angle:5deg; --tx:26px; transform:rotate(5deg) translateX(26px); z-index:3; }
+  .fan-card:nth-child(4) { --base-transform: rotate(14deg) translateX(78px); --angle:14deg; --tx:78px; transform:rotate(14deg) translateX(78px); z-index:4; }
+
+  /* 选中后展开的内容面板：在扑克牌区域内"卡牌翻面"，不遮挡上方主界面按钮 */
+  .card-panel { display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:286px; max-height:172px;
+    flex-direction:column;
+    background:rgba(255,255,255,.97); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,.95);
+    border-radius:14px; padding:12px 14px; box-shadow:0 16px 40px rgba(139,92,246,.28); z-index:40; }
+  .card-panel.show { display:flex; animation:panelIn .22s ease; }
+  @keyframes panelIn { from { opacity:0; transform:translate(-50%,-46%) scale(.95); } to { opacity:1; transform:translate(-50%,-50%) scale(1); } }
+  .card-panel .panel-title { font-size:13px; font-weight:700; color:#7c2d12; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+  .card-panel .panel-close { cursor:pointer; font-size:16px; color:#9a3412; opacity:.6; width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:6px; }
+  .card-panel .panel-close:hover { background:rgba(0,0,0,.06); opacity:1; }
+  .card-panel .panel-content { font-size:11px; line-height:1.7; color:#1f2937; flex:1; min-height:0; overflow-y:auto; padding-right:4px; }
+  .card-panel .panel-content .stat-row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(0,0,0,.06); }
+  .card-panel .panel-content .stat-row:last-child { border-bottom:none; }
+
+  /* ===== 详情区域 ===== */
+  .detail-view { display:none; }
+  .detail-view.active { display:block; animation:fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .detail-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .detail-back { width:32px; height:32px; border-radius:10px; background:rgba(255,255,255,.45); border:1px solid rgba(255,255,255,.55);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; color:#7c2d12; transition:background .15s; font-weight:700; }
+  .detail-back:hover { background:rgba(255,255,255,.65); }
+  .detail-title { font-size:16px; font-weight:700; color:#7c2d12; }
+
+  /* 统计卡片 */
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0; }
+  .cell { background:rgba(255,255,255,.35); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.45);
+    border-radius:14px; padding:14px 12px; box-shadow:0 2px 12px rgba(139,92,246,.08); display:flex; align-items:center; gap:10px; }
+  .cell .icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .cell .icon svg { width:18px; height:18px; }
+  .cell .n { font-size:18px; font-weight:700; color:#7c2d12; font-variant-numeric:tabular-nums; line-height:1.1; }
+  .cell .l { font-size:11px; color:#9a3412; margin-top:3px; opacity:.8; }
+
+  /* 本周专注曲线 */
+  .week-chart { background:rgba(255,255,255,.35); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.45);
+    border-radius:16px; padding:16px 14px; margin:0; box-shadow:0 2px 12px rgba(139,92,246,.08); }
+  .week-chart .title { font-size:13px; font-weight:600; color:#7c2d12; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+  .week-chart .title span { font-size:11px; color:#9a3412; font-weight:400; opacity:.8; }
+  .bars { display:flex; align-items:flex-end; justify-content:space-between; height:70px; gap:5px; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .bar { width:100%; max-width:20px; background:linear-gradient(180deg,#fdba74,#f97316); border-radius:5px 5px 0 0; min-height:4px; transition:height .4s ease; opacity:.85; }
+  .bar.today { background:linear-gradient(180deg,#fde047,#eab308); opacity:1; box-shadow:0 0 10px rgba(234,179,8,.5); }
+  .bar-label { font-size:10px; color:#9a3412; opacity:.75; }
+
+  /* 工具按钮 */
+  .tools { display:flex; gap:8px; margin-bottom:12px; }
+  .tools .btn { font-size:12px; padding:11px 0; }
+  #summary { display:none; margin-top:10px; background:rgba(255,255,255,.45); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.55);
+    border-radius:12px; padding:12px 14px; font-size:12px; line-height:1.75; white-space:pre-wrap; color:#1f2937;
+    box-shadow:0 2px 10px rgba(139,92,246,.08); max-height:220px; overflow-y:auto; }
+  .hint { font-size:11px; color:#7c2d12; margin-top:14px; text-align:center; opacity:.7; }
+</style>
+</head>
+<body>
+  <h1>
+    <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#f97316"/><circle cx="32" cy="32" r="17" fill="none" stroke="#fff" stroke-width="5"/><circle cx="32" cy="32" r="6" fill="#fff"/></svg>
+    专注回收
+  </h1>
+
+  <!-- ===== 主界面 ===== -->
+  <div class="main-view" id="mainView">
+    <div class="state-box">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 120 120">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fde047"/>
+              <stop offset="50%" stop-color="#fb923c"/>
+              <stop offset="100%" stop-color="#f97316"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="60" cy="60" r="52"/>
+          <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+        </svg>
+        <div class="ring-center">
+          <div class="remain" id="remain">25:00</div>
+          <div class="state-txt" id="stateTxt">未开始</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="line">
+      <select id="durSel"></select>
+      <input type="number" id="customMin" min="5" max="180" style="width:74px;display:none" title="自定义分钟">
+    </div>
+
+    <div class="line" id="ctrlLine">
+      <button class="btn primary" id="btnMain">开始专注</button>
+    </div>
+
+    <div class="line" style="margin-top:4px;">
+      <button class="btn ghost" id="btnReloadAll" style="font-size:12px;padding:10px 0;">🔄 刷新所有页面（扩展更新后用）</button>
+    </div>
+
+    <!-- 扑克牌快速入口 -->
+    <div class="fan-section">
+      <div class="fan-title">快速查看（鼠标移到扑克牌上，直接点击选项）</div>
+      <div class="fan-cards" id="fanCards">
+        <div class="fan-card" data-card="today">
+          <div class="icon" style="background:linear-gradient(135deg,#34d399,#059669);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <div class="title">今日数据</div>
+          <div class="desc">
+            <span class="key" data-action="blocks">完成块数</span>
+            <span class="key" data-action="rate">专注率</span>
+            <span class="key" data-action="studytime">学习/娱乐时长</span>
+          </div>
+        </div>
+        <div class="fan-card" data-card="week">
+          <div class="icon" style="background:linear-gradient(135deg,#60a5fa,#2563eb);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="title">本周曲线</div>
+          <div class="desc">
+            <span class="key" data-action="weektrend">7天专注趋势</span>
+            <span class="key" data-action="todaycompare">今日高亮对比</span>
+          </div>
+        </div>
+        <div class="fan-card" data-card="tools">
+          <div class="icon" style="background:linear-gradient(135deg,#a78bfa,#7c3aed);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div class="title">更多工具</div>
+          <div class="desc">
+            <span class="key" data-action="summary">今日小结</span>
+            <span class="key" data-action="copy">复制复盘</span>
+            <span class="key" data-action="settings">设置</span>
+          </div>
+        </div>
+        <div class="fan-card" data-card="help">
+          <div class="icon" style="background:linear-gradient(135deg,#f472b6,#db2777);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div class="title">使用说明</div>
+          <div class="desc">
+            <span class="key" data-action="features">功能介绍</span>
+            <span class="key" data-action="guide">操作指南</span>
+            <span class="key" data-action="faq">常见问题</span>
+          </div>
+        </div>
+      </div>
+      <!-- 内容面板 -->
+      <div class="card-panel" id="cardPanel">
+        <div class="panel-title">
+          <span id="panelTitle">详情</span>
+          <span class="panel-close" title="收起">×</span>
+        </div>
+        <div class="panel-content" id="panelContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 详情2：今日数据 ===== -->
+  <div class="detail-view" id="d2">
+    <div class="detail-header">
+      <div class="detail-back" title="返回">←</div>
+      <div class="detail-title">今日数据</div>
+    </div>
+    <div class="grid">
+      <div class="cell">
+        <div class="icon" style="background:#e0f2fe;"><svg viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>
+        <div><div class="n" id="kBlocks">0</div><div class="l">完成块 / 分钟</div></div>
+      </div>
+      <div class="cell">
+        <div class="icon" style="background:#dcfce7;"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <div><div class="n" id="kRate">—</div><div class="l">自评专注率</div></div>
+      </div>
+      <div class="cell">
+        <div class="icon" style="background:#fef3c7;"><svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <div><div class="n" id="kStudy">0分</div><div class="l">学习时长</div></div>
+      </div>
+      <div class="cell">
+        <div class="icon" style="background:#fee2e2;"><svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div><div class="n" id="kFun">0分</div><div class="l">娱乐时长</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 详情3：本周曲线 ===== -->
+  <div class="detail-view" id="d3">
+    <div class="detail-header">
+      <div class="detail-back" title="返回">←</div>
+      <div class="detail-title">本周专注曲线</div>
+    </div>
+    <div class="week-chart">
+      <div class="title">本周专注 <span id="weekTotal">共 0 分钟</span></div>
+      <div class="bars" id="weekBars"></div>
+    </div>
+  </div>
+
+  <!-- ===== 详情4：更多工具 ===== -->
+  <div class="detail-view" id="d4">
+    <div class="detail-header">
+      <div class="detail-back" title="返回">←</div>
+      <div class="detail-title">更多工具</div>
+    </div>
+    <div class="tools">
+      <button class="btn ghost" id="btnSummary">今日小结</button>
+      <button class="btn ghost" id="btnCopy">复制复盘包</button>
+      <button class="btn ghost" id="btnOptions">设置</button>
+    </div>
+    <div id="summary"></div>
+    <div class="hint">数据仅存于本机，零联网</div>
+  </div>
+
+  <!-- ===== 详情5：使用说明 ===== -->
+  <div class="detail-view" id="d5">
+    <div class="detail-header">
+      <div class="detail-back" title="返回">←</div>
+      <div class="detail-title">使用说明</div>
+    </div>
+    <div style="background:rgba(255,255,255,.35);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.45);border-radius:14px;padding:14px;font-size:12px;line-height:1.8;color:#7c2d12;">
+      <p style="font-weight:700;margin-bottom:6px;">🎯 基本使用</p>
+      <p style="margin-bottom:10px;">1. 选择专注时长（默认25分钟）<br>2. 点击"开始专注"按钮<br>3. 到点后会弹出自检：是/否专注<br>4. 走神了可以标记原因并回收注意力</p>
+      <p style="font-weight:700;margin-bottom:6px;">⏱️ 悬浮球</p>
+      <p style="margin-bottom:10px;">浏览任意网页时右上角显示悬浮球<br>左键点击开始/暂停，右键菜单更多操作</p>
+      <p style="font-weight:700;margin-bottom:6px;">📊 数据统计</p>
+      <p>自动统计学习/娱乐网站时长<br>今日数据和本周曲线随时查看<br>一键复制复盘包，粘贴给豆包分析</p>
+    </div>
+  </div>
+
+  <script src="storage.js"></script>
+  <script src="popup.js"></script>
+  <script src="popup-fan.js"></script>
+</body>
+</html>

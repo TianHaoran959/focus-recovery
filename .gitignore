@@ -1,0 +1,34 @@
+# 依赖
+node_modules/
+package-lock.json
+yarn.lock
+
+# 构建产物
+dist/
+build/
+*.crx
+*.pem
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 临时文件
+*.tmp
+*.log
+_shots/
+_screenshots/
+
+# 本地数据（扩展运行时产生）
+*.local
+
+# 打包文件（不提交 zip，通过 Release 发布）
+*.zip

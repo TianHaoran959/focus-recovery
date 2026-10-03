@@ -1,0 +1,6 @@
+/*
+ * content.css —— 占位说明
+ * 本扩展的注入 UI 全部位于 content.js 创建的 Shadow DOM 内部，样式以 <style> 注入 Shadow，
+ * 以避免被宿主页全局样式污染，因此本文件不写具体规则（Shadow 会隔离外部样式表）。
+ * 保留此文件仅为 manifest content_scripts 声明的完整性。
+ */

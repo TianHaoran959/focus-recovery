@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>专注回收 · 设置</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:linear-gradient(180deg,#fef3c7 0%,#fed7aa 30%,#fecaca 60%,#ddd6fe 100%); color:#1f2937; padding:28px 16px 60px; min-height:100vh; }
+  .wrap { max-width:680px; margin:0 auto; }
+  h1 { font-size:22px; margin-bottom:4px; display:flex; align-items:center; gap:10px; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.15); }
+  h1 svg { width:28px; height:28px; }
+  .sub { color:#7c2d12; font-size:13px; margin-bottom:20px; opacity:.85; }
+  .card { background:rgba(255,255,255,.35); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); border:1px solid rgba(255,255,255,.5);
+    border-radius:16px; padding:18px 20px; margin-bottom:16px; box-shadow:0 4px 20px rgba(139,92,246,.1); position:relative; overflow:hidden; }
+  .card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:linear-gradient(180deg,#fde047,#fb923c,#f97316); }
+  .card h2 { font-size:15px; margin-bottom:12px; color:#7c2d12; font-weight:600; }
+  .row { display:flex; align-items:center; gap:10px; margin:10px 0; font-size:13px; flex-wrap:wrap; }
+  .row label { min-width:150px; color:#7c2d12; }
+  input[type=number],input[type=text],select { padding:8px 10px; border:1px solid rgba(253,186,116,.6); border-radius:10px; font-size:13px; background:rgba(255,255,255,.5); color:#1f2937; outline:none; transition:border-color .15s,box-shadow .15s; }
+  input[type=number]:focus,input[type=text]:focus,select:focus { border-color:#f97316; box-shadow:0 0 0 3px rgba(249,115,22,.12); background:rgba(255,255,255,.7); }
+  input[type=number]{ width:90px; } input[type=text]{ flex:1; min-width:160px; }
+  textarea { width:100%; min-height:96px; border:1px solid rgba(253,186,116,.6); border-radius:10px; padding:10px; font-size:12px; line-height:1.6; resize:vertical; outline:none; background:rgba(255,255,255,.5); color:#1f2937; transition:border-color .15s,box-shadow .15s; }
+  textarea:focus { border-color:#f97316; box-shadow:0 0 0 3px rgba(249,115,22,.12); background:rgba(255,255,255,.7); }
+  .host-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px dashed rgba(253,186,116,.5); font-size:13px; }
+  .host-row .h { flex:1; word-break:break-all; color:#7c2d12; }
+  .host-row select { padding:5px 8px; }
+  .btn { border:none; border-radius:11px; padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer; transition:filter .15s,transform .08s,box-shadow .15s; }
+  .btn:active { transform:scale(.98); }
+  .btn.primary { background:linear-gradient(135deg,#fb923c,#f97316); color:#fff; box-shadow:0 4px 12px rgba(249,115,22,.35); }
+  .btn.primary:hover { filter:brightness(1.08); box-shadow:0 6px 16px rgba(249,115,22,.45); }
+  .btn.ghost { background:rgba(255,255,255,.4); color:#7c2d12; border:1px solid rgba(255,255,255,.5); } .btn.ghost:hover { background:rgba(255,255,255,.6); }
+  .btn.danger { background:rgba(254,226,226,.6); color:#991b1b; border:1px solid rgba(254,202,202,.5); } .btn.danger:hover { background:rgba(254,226,226,.8); }
+  .bar { position:sticky; bottom:16px; display:flex; gap:12px; justify-content:flex-end; }
+  .saved { color:#7c2d12; font-size:13px; align-self:center; opacity:0; transition:.3s; font-weight:600; }
+  .note { font-size:12px; color:#9a3412; line-height:1.6; opacity:.8; }
+  .seg label { min-width:auto; display:flex; align-items:center; gap:5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>专注回收 · 设置</h1>
+  <div class="sub">所有数据仅保存在本机浏览器，不上传、不联网。带“初始参数”的项可先默认，自用一周后再校准。</div>
+
+  <div class="card">
+    <h2>计时</h2>
+    <div class="row"><label>默认档位（分钟）</label><select id="defaultDuration"></select></div>
+    <div class="row"><label>自定义档位（5–180）</label><input type="number" id="customDuration" min="5" max="180"></div>
+    <div class="row"><label>连续几块提示微休息（0=关）</label><input type="number" id="relaxAfterBlocks" min="0" max="12"></div>
+  </div>
+
+  <div class="card">
+    <h2>提醒方式</h2>
+    <div class="row seg"><label><input type="checkbox" id="systemNotify"> 开启系统通知（页面浮层始终保留）</label></div>
+    <div class="row seg"><label><input type="checkbox" id="sound"> 到点提示音（默认关，离线短音）</label></div>
+    <div class="row"><label>自检模式</label>
+      <select id="mode"><option value="gentle">温和（可忽略/跳过）</option><option value="strict">严格（必须回答）</option></select>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>网站时长统计与娱乐提醒</h2>
+    <div class="row"><label>统计范围</label>
+      <select id="trackScope"><option value="session">仅专注会话中统计</option><option value="always">全天统计</option></select>
+    </div>
+    <div class="row"><label>多少秒无操作算空闲</label><input type="number" id="idleSec" min="30" max="600"> <span class="note">初始参数</span></div>
+    <div class="row seg"><label><input type="checkbox" id="entertainRemind"> 娱乐站温和提醒</label></div>
+    <div class="row"><label>娱乐站累计多少秒提醒</label><input type="number" id="entertainThresholdSec" min="20" max="1800"> <span class="note">初始参数，默认120秒</span></div>
+    <div class="row seg"><label><input type="checkbox" id="stillDetect"> 页面静止/疑似离开检测（视频在播、内容在变、你在操作都算活跃，不截屏）</label></div>
+    <div class="row"><label>静止多少秒不计有效时长</label><input type="number" id="stillIdleSec" min="15" max="600"> <span class="note">默认45秒</span></div>
+    <div class="row"><label>静止多少秒温和提醒</label><input type="number" id="stillWarnSec" min="30" max="900"> <span class="note">默认90秒</span></div>
+  </div>
+
+  <div class="card">
+    <h2>提醒话术（每行一条，随机抽取）</h2>
+    <div class="row"><label>专注鼓励话术</label></div>
+    <textarea id="phEnc"></textarea>
+    <div class="row"><label style="margin-top:8px">走神拉回话术</label></div>
+    <textarea id="phRec"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>网站学习/娱乐分类</h2>
+    <div class="note" style="margin-bottom:8px">B站、YouTube 默认为“中性”（可能用于学习）。在此手动分类后长期生效；只记录域名，不记录具体网页内容。</div>
+    <div id="hostList"></div>
+    <div class="row" style="margin-top:10px">
+      <input type="text" id="newHost" placeholder="添加域名，如 bilibili.com">
+      <select id="newCls"><option value="study">学习</option><option value="entertain">娱乐</option><option value="neutral">中性</option></select>
+      <button class="btn ghost" id="btnAddHost">添加/改判</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>数据管理</h2>
+    <div class="row">
+      <button class="btn ghost" id="btnExport">导出 JSON 备份</button>
+      <button class="btn ghost" id="btnImport">导入 JSON</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+      <button class="btn danger" id="btnClear">清空全部数据</button>
+    </div>
+  </div>
+
+  <div class="bar">
+    <span class="saved" id="savedTip">已保存</span>
+    <button class="btn primary" id="btnSave">保存设置</button>
+  </div>
+</div>
+<script src="storage.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

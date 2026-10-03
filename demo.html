@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>专注回收 · 在线仿真 Demo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23f97316'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='white' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='6' fill='white'/%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(180deg,#fef3c7 0%,#fed7aa 30%,#fecaca 60%,#ddd6fe 100%);color:#1f2937;line-height:1.5;min-height:100vh}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 16px 50px}
+  header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  header .logo{width:30px;height:30px}
+  header h1{font-size:20px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .badge{font-size:12px;background:rgba(255,255,255,.4);color:#7c2d12;border:1px solid rgba(255,255,255,.5);padding:3px 10px;border-radius:999px;backdrop-filter:blur(10px)}
+  header .spacer{flex:1}
+  .btn{border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:filter .15s,transform .08s}
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:linear-gradient(135deg,#fb923c,#f97316);color:#fff;box-shadow:0 4px 12px rgba(249,115,22,.35)}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ghost{background:rgba(255,255,255,.4);color:#7c2d12;border:1px solid rgba(255,255,255,.5)}
+  .btn.line{background:rgba(255,255,255,.5);border:1px solid rgba(253,186,116,.6);color:#7c2d12;backdrop-filter:blur(10px)}
+  .notice{margin:14px 0;background:rgba(255,255,255,.4);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.5);color:#7c2d12;font-size:13px;padding:10px 14px;border-radius:11px}
+  .grid{display:grid;grid-template-columns:1.7fr 1fr;gap:16px}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+  .panel{background:rgba(255,255,255,.35);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,.5);border-radius:16px;box-shadow:0 4px 20px rgba(139,92,246,.1)}
+  /* 模拟浏览器 */
+  .browser{overflow:hidden}
+  .tabbar{display:flex;gap:6px;background:rgba(255,255,255,.2);padding:10px 10px 0;flex-wrap:wrap}
+  .tab{font-size:12px;padding:7px 13px;border-radius:9px 9px 0 0;background:rgba(255,255,255,.3);cursor:pointer;border:1px solid transparent;border-bottom:none;color:#7c2d12}
+  .tab.active{background:rgba(255,255,255,.6);font-weight:600;color:#7c2d12}
+  .tab .k{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .k.study{background:#0f766e}.k.ent{background:#ea580c}.k.neu{background:#94a3a2}
+  .addr{background:rgba(255,255,255,.5);padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.4);font-size:12px;color:#7c2d12}
+  .stage{position:relative;height:330px;background:linear-gradient(135deg,rgba(254,243,199,.5),rgba(253,224,71,.3),rgba(251,146,60,.2));display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+  .stage .big{font-size:16px;color:#7c2d12;font-weight:600}
+  .stage .small{font-size:12px;color:#9a3412;opacity:.8}
+  .barline{width:180px;height:8px;border-radius:6px;background:rgba(255,255,255,.4);overflow:hidden}
+  .barline i{display:block;height:100%;width:40%;background:linear-gradient(90deg,#fde047,#f97316);animation:load 3s ease-in-out infinite alternate}
+  @keyframes load{from{width:25%}to{width:75%}}
+  /* 悬浮球 - 沉浸自然风 毛玻璃+环形进度 */
+  .ball{position:absolute;top:16px;right:16px;min-width:100px;background:linear-gradient(135deg,rgba(251,146,60,.95),rgba(249,115,22,.95));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;border-radius:18px;padding:10px 12px;text-align:center;box-shadow:0 6px 20px rgba(249,115,22,.4);cursor:pointer;user-select:none;border:1px solid rgba(255,255,255,.25)}
+  .ball .ring-wrap{position:relative;width:56px;height:56px;margin:0 auto 4px}
+  .ball .ring-wrap svg{width:56px;height:56px;transform:rotate(-90deg)}
+  .ball .ring-bg{fill:none;stroke:rgba(255,255,255,.25);stroke-width:5}
+  .ball .ring-fg{fill:none;stroke:#fde047;stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .6s linear;filter:drop-shadow(0 0 3px rgba(253,224,71,.5))}
+  .ball .ring-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .ball .t{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+  .ball .s{font-size:10px;opacity:.9;margin-top:2px}
+  .ball .menu{display:none;margin-top:7px;border-top:1px solid rgba(255,255,255,.25);padding-top:5px}
+  .ball.open .menu{display:block}
+  .ball .menu button{display:block;width:100%;margin:3px 0;padding:5px 0;font-size:11px;color:#7c2d12;background:rgba(255,255,255,.9);border:none;border-radius:8px;cursor:pointer;font-weight:600}
+  .ball .menu button:hover{background:#fff}
+  .ctrl{display:flex;gap:8px;align-items:center;padding:12px;background:rgba(255,255,255,.3);border-top:1px solid rgba(255,255,255,.4);flex-wrap:wrap}
+  .ctrl select{padding:8px;border:1px solid rgba(253,186,116,.6);border-radius:9px;font-size:13px;background:rgba(255,255,255,.6);color:#1f2937}
+  .ctrl .tip{font-size:11px;color:#9a3412;margin-left:auto;opacity:.8}
+  /* 浮层 */
+  .mask{position:absolute;inset:0;background:rgba(31,41,55,.35);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:5}
+  .card{width:330px;max-width:90%;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-radius:16px;padding:20px;position:relative;border:1px solid rgba(255,255,255,.6);box-shadow:0 20px 50px rgba(0,0,0,.2)}
+  .card::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,#fde047,#fb923c,#f97316);border-radius:16px 16px 0 0}
+  .card h3{font-size:16px;margin-bottom:5px;color:#7c2d12}.card .q{font-size:13px;color:#9a3412;margin-bottom:14px}
+  .row2{display:flex;gap:10px}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+  .tag{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid #fdba74;background:#fff7ed;color:#9a3412;cursor:pointer;transition:all .12s}
+  .tag.on{background:linear-gradient(135deg,#fb923c,#f97316);color:#fff;border-color:#f97316;box-shadow:0 2px 8px rgba(249,115,22,.3)}
+  .card input{width:100%;padding:9px 11px;font-size:13px;border:1px solid #fdba74;border-radius:10px;margin-bottom:12px;outline:none;background:#fff7ed;color:#1f2937}
+  .card input:focus{border-color:#f97316;box-shadow:0 0 0 3px rgba(249,115,22,.12);background:#fff}
+  .entbar{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(255,247,237,.95);backdrop-filter:blur(10px);border:1px solid #fdba74;color:#9a3412;border-radius:11px;padding:9px 13px;font-size:12px;display:none;align-items:center;gap:10px;z-index:4;box-shadow:0 8px 24px rgba(249,115,22,.2)}
+  .entbar button{border:none;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:600}
+  .entbar .a{background:linear-gradient(135deg,#fb923c,#f97316);color:#fff}.entbar .b{background:#ffedd5;color:#9a3412}
+  .toast{position:absolute;left:50%;top:16px;transform:translateX(-50%) translateY(-12px);background:linear-gradient(135deg,rgba(251,146,60,.95),rgba(249,115,22,.95));backdrop-filter:blur(10px);color:#fff;font-size:13px;padding:10px 16px;border-radius:11px;opacity:0;transition:.25s;z-index:6;text-align:center;max-width:86%;pointer-events:none;box-shadow:0 8px 24px rgba(249,115,22,.3)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  /* 右侧数据 */
+  .side{padding:16px}
+  .side h2{font-size:14px;color:#7c2d12;margin-bottom:10px;font-weight:600}
+  .stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .c{background:rgba(255,255,255,.4);border-radius:10px;padding:9px 11px;border:1px solid rgba(255,255,255,.4)}
+  .c .n{font-size:18px;font-weight:700;color:#7c2d12}.c .l{font-size:11px;color:#9a3412;opacity:.8}
+  .summary{font-size:12px;background:rgba(255,255,255,.4);border-radius:10px;padding:10px 12px;white-space:pre-wrap;line-height:1.75;margin-bottom:14px;min-height:60px;color:#1f2937;border:1px solid rgba(255,255,255,.4)}
+  .week h2{margin-top:4px}
+  .wbar{display:flex;align-items:flex-end;gap:7px;height:96px;margin:8px 0 4px}
+  .wbar .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+  .wbar .col i{width:100%;max-width:26px;background:linear-gradient(180deg,#fdba74,#f97316);border-radius:5px 5px 0 0;display:block;opacity:.85}
+  .wbar .col.today i{background:linear-gradient(180deg,#fde047,#eab308);opacity:1;box-shadow:0 0 8px rgba(234,179,8,.5)}
+  .wbar .col span{font-size:10px;color:#9a3412;opacity:.7}
+  .ex{font-size:11px;color:#9a3412;margin-bottom:12px;opacity:.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg class="logo" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#0f766e"/><circle cx="32" cy="32" r="17" fill="none" stroke="#fff" stroke-width="5"/><circle cx="32" cy="32" r="6" fill="#fff"/></svg>
+    <h1>专注回收 · 在线仿真</h1>
+    <span class="badge">在线模拟 · 图表为示例数据</span>
+    <span class="spacer"></span>
+    <button class="btn line" id="resetBtn">重置演示</button>
+  </header>
+
+  <div class="notice">这是<b>免安装仿真页</b>：在下方模拟浏览器里点「开始专注」，再切换不同标签，体验定时自检、走神回收与娱乐提醒的完整流程。真实扩展会在你浏览任意网站时于右上角显示悬浮球并自动统计（请下载 Chrome 扩展版）。</div>
+
+  <div class="grid">
+    <!-- 左：模拟浏览器 -->
+    <div class="panel browser">
+      <div class="tabbar" id="tabbar">
+        <div class="tab active" data-tab="study"><span class="k study"></span>小鹅通·课程学习</div>
+        <div class="tab" data-tab="neutral"><span class="k neu"></span>Bilibili（中性）</div>
+        <div class="tab" data-tab="ent"><span class="k ent"></span>短视频·娱乐</div>
+      </div>
+      <div class="addr" id="addrBar">https://app7scxqsjh1141.h5.xet.pomoho.com（学习）</div>
+      <div class="stage" id="stage">
+        <div class="big" id="stageBig">课程视频播放中</div>
+        <div class="small" id="stageSmall">试着专注看一会儿，或切到“娱乐”标签触发温和提醒</div>
+        <div class="barline"><i></i></div>
+
+        <div class="ball" id="ball">
+          <div class="t" id="ballTime">25:00</div><div class="s" id="ballState">未开始</div>
+          <div class="menu" id="ballMenu"></div>
+        </div>
+
+        <div class="entbar" id="entbar">
+          <span id="entText"></span>
+          <button class="a" id="entStudy">回到学习</button><button class="b" id="entPass">本次放行</button>
+        </div>
+        <div class="toast" id="toast"></div>
+
+        <div class="mask" id="mask">
+          <div class="card" id="checkinCard">
+            <h3>专注自检</h3><div class="q">刚才这段时间，你专注吗？</div>
+            <div class="row2">
+              <button class="btn primary" style="flex:1" id="btnYes">是，专注</button>
+              <button class="btn ghost" style="flex:1" id="btnNo">否，走神了</button>
+            </div>
+          </div>
+          <div class="card" id="recoverCard" style="display:none">
+            <h3>把注意力收回来</h3><div class="q">走神很正常，标记一下（均可跳过），然后回到任务。</div>
+            <div class="tags" id="tags"></div>
+            <input id="taskInput" placeholder="现在回到什么任务？（可跳过）" maxlength="40">
+            <button class="btn primary" style="width:100%" id="btnBack">回到专注</button>
+          </div>
+        </div>
+      </div>
+      <div class="ctrl">
+        档位
+        <select id="dur"><option>25</option><option>30</option><option>45</option><option>60</option></select>
+        <button class="btn primary" id="mainBtn">开始专注</button>
+        <button class="btn ghost" id="nowBtn">立即触发自检</button>
+        <span class="tip">演示已加速约 50 倍，也可直接点“立即触发自检”</span>
+      </div>
+    </div>
+
+    <!-- 右：数据面板 -->
+    <div class="panel side">
+      <h2>本次演示（实时）</h2>
+      <div class="stat">
+        <div class="c"><div class="n" id="sBlocks">0</div><div class="l">完成块</div></div>
+        <div class="c"><div class="n" id="sRate">—</div><div class="l">自评专注率</div></div>
+        <div class="c"><div class="n" id="sStudy">0分</div><div class="l">学习时长</div></div>
+        <div class="c"><div class="n" id="sEnt">0分</div><div class="l">娱乐时长</div></div>
+      </div>
+      <h2>今日专注小结</h2>
+      <div class="summary" id="summaryBox">开始第一段专注后，这里会实时生成小结。</div>
+
+      <div class="week">
+        <h2>近 7 天专注率（示例数据）</h2>
+        <div class="wbar" id="weekBar"></div>
+        <div class="ex">仅示意产品上线后的长期趋势视图，非真实记录。</div>
+      </div>
+      <button class="btn ghost" style="width:100%" id="copyBtn">复制复盘包（粘贴给豆包做 AI 复盘）</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var SPEED=50;                      // 演示加速：1 真实秒 ≈ 50 模拟秒
+  var TAGS=['看手机','刷无关网页或视频','发呆放空','被他人打断','想别的事','处理杂事'];
+  var ENC=['做得不错，保持这个节奏','刚刚这段很稳，继续','一次完整的专注，收下','状态在线，乘胜追击','专注是可以练出来的，你正在变强'];
+  var REC=['没关系，觉察到走神就是进步','走神很正常，现在回来就好','先深呼吸一次，再回到当前任务','看见分心，就已经赢了一半'];
+  var TABS={study:{cls:'study',url:'https://app7scxqsjh1141.h5.xet.pomoho.com（学习）',big:'课程视频播放中',small:'学习类网站，时长计入“学习”'},
+            neutral:{cls:'neutral',url:'https://www.bilibili.com（中性 · 可能用于学习）',big:'Bilibili 页面',small:'中性站点，由你在扩展里一键判定学习/娱乐'},
+            ent:{cls:'entertain',url:'https://www.douyin.com（娱乐）',big:'短视频推荐流',small:'娱乐类站点，专注中停留过久会温和提醒'}};
+  var state='IDLE',activeTab='study',planned=25*60,remain=planned,selTag=null,timer=null;
+  var released={},reminded={};
+  var live={focused:0,distracted:0,skipped:0,studySec:0,entSec:0,neuSec:0,tags:{},hour:{}};
+  var $=function(id){return document.getElementById(id)};
+
+  // 近 7 天示例
+  var week=[['一',62],['二',70],['三',66],['四',75],['五',72],['六',80],['日',78]];
+  var wb=$('weekBar');week.forEach(function(d){var c=document.createElement('div');c.className='col';var i=document.createElement('i');i.style.height=d[1]+'%';var s=document.createElement('span');s.textContent=d[0];c.appendChild(i);c.appendChild(s);wb.appendChild(c)});
+
+  // 标签切换
+  $('tabbar').addEventListener('click',function(e){var t=e.target.closest('.tab');if(!t)return;activeTab=t.dataset.tab;
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('active',x===t)});
+    var info=TABS[activeTab];$('addrBar').textContent=info.url;$('stageBig').textContent=info.big;$('stageSmall').textContent=info.small;});
+
+  function fmt(sec){sec=Math.max(0,Math.floor(sec));return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}
+  function menuRender(){
+    var m=$('ballMenu');m.innerHTML='';
+    function mk(t,fn){var b=document.createElement('button');b.textContent=t;b.onclick=function(e){e.stopPropagation();fn()};return b}
+    if(state==='RUNNING'){m.appendChild(mk('暂停',pause));m.appendChild(mk('立即自检',checkin))}
+    else if(state==='PAUSED'){m.appendChild(mk('继续',resume))}
+    if(state!=='IDLE')m.appendChild(mk('结束',endSess));
+  }
+  function render(){
+    $('ballTime').textContent=(state==='RUNNING'||state==='PAUSED')?fmt(remain):fmt(planned);
+    $('ballState').textContent={IDLE:'未开始',RUNNING:'专注中',PAUSED:'已暂停',CHECKIN:'待自检',RECOVER:'回收中'}[state];
+    var main=$('mainBtn');
+    if(state==='RUNNING'){main.textContent='暂停';main.onclick=pause}else if(state==='PAUSED'){main.textContent='继续';main.onclick=resume}
+    else if(state==='CHECKIN'||state==='RECOVER'){main.textContent='请在浮层作答';main.onclick=function(){}}
+    else{main.textContent='开始专注';main.onclick=start}
+    menuRender();renderStat();
+  }
+  function start(){planned=Number($('dur').value)*60;remain=planned;state='RUNNING';released={};reminded={};$('entbar').style.display='none';render()}
+  function pause(){if(state==='RUNNING')state='PAUSED';render()}
+  function resume(){if(state==='PAUSED')state='RUNNING';render()}
+  function endSess(){state='IDLE';remain=planned;$('mask').style.display='none';$('entbar').style.display='none';render()}
+  function checkin(){if(state!=='RUNNING')return;state='CHECKIN';openCheckin();render()}
+  $('nowBtn').onclick=checkin;
+  $('ball').addEventListener('click',function(){$('ball').classList.toggle('open')});
+
+  // 自检/回收
+  function openCheckin(){selTag=null;$('recoverCard').style.display='none';$('checkinCard').style.display='block';$('mask').style.display='flex';
+    var box=$('tags');box.innerHTML='';TAGS.forEach(function(t){var c=document.createElement('span');c.className='tag';c.textContent=t;
+      c.onclick=function(){box.querySelectorAll('.tag').forEach(function(x){x.classList.remove('on')});c.classList.add('on');selTag=t};box.appendChild(c)});
+    $('taskInput').value='';}
+  function closeMask(){$('mask').style.display='none'}
+  function nextBlock(){remain=planned;state='RUNNING';render()}
+  $('btnYes').onclick=function(){live.focused++;closeMask();toast(ENC[Math.floor(Math.random()*ENC.length)]);nextBlock()};
+  $('btnNo').onclick=function(){state='RECOVER';$('checkinCard').style.display='none';$('recoverCard').style.display='block'};
+  $('btnBack').onclick=function(){live.distracted++;var h=new Date().getHours();live.hour[h]=(live.hour[h]||0)+1;
+    if(selTag)live.tags[selTag]=(live.tags[selTag]||0)+1;closeMask();toast(REC[Math.floor(Math.random()*REC.length)]);nextBlock()};
+
+  // 娱乐提醒
+  $('entStudy').onclick=function(){document.querySelector('.tab[data-tab="study"]').click();$('entbar').style.display='none'};
+  $('entPass').onclick=function(){released.ent=true;$('entbar').style.display='none'};
+  function toast(t){var el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove('show')},2600)}
+
+  // 主循环（演示加速）
+  setInterval(function(){
+    if(state==='RUNNING'){
+      remain-=SPEED*0.2; // 每 200ms
+      live[TABS[activeTab].cls==='study'?'studySec':TABS[activeTab].cls==='entertain'?'entSec':'neuSec']+=SPEED*0.2;
+      if(activeTab==='ent'&&!released.ent&&!reminded.ent&&live.entSec>=120){reminded.ent=true;
+        $('entText').textContent='你已在娱乐站点停留约 '+Math.round(live.entSec/60)+' 分钟，要回到学习吗？';$('entbar').style.display='flex'}
+      $('ballTime').textContent=fmt(remain);
+      if(remain<=0)checkin();
+    }
+  },200);
+
+  function renderStat(){
+    var ans=live.focused+live.distracted;
+    $('sBlocks').textContent=ans;
+    $('sRate').textContent=ans?Math.round(live.focused/ans*100)+'%':'—';
+    $('sStudy').textContent=Math.round(live.studySec/60)+'分';
+    $('sEnt').textContent=Math.round(live.entSec/60)+'分';
+    var L=[];
+    L.push('完成块：'+ans+'（专注 '+live.focused+' / 走神 '+live.distracted+'）');
+    L.push('自评专注率：'+(ans?Math.round(live.focused/ans*100)+'%':'样本不足'));
+    L.push('学习 '+Math.round(live.studySec/60)+' 分钟 / 娱乐 '+Math.round(live.entSec/60)+' 分钟 / 其他 '+Math.round(live.neuSec/60)+' 分钟');
+    var peak=Object.keys(live.hour).sort(function(a,b){return live.hour[b]-live.hour[a]})[0];
+    if(peak)L.push('走神高发时段：'+peak+':00');
+    var tt=Object.keys(live.tags).sort(function(a,b){return live.tags[b]-live.tags[a]});
+    if(tt.length)L.push('Top 走神类型：'+tt.slice(0,3).join('、'));
+    if(ans)L.push('\n口径：专注率=专注/(专注+走神)，跳过不计入。');
+    $('summaryBox').textContent=L.join('\n');
+  }
+  setInterval(renderStat,1000);
+
+  // L2 复制
+  var L2P='你是我的专注力教练。下面是我今天用“专注回收”工具导出的结构化记录（自评数据，可能不完整）。请你：\n1) 用简洁中文输出“今日专注小结”；2) 指出最值得注意的 1–2 个规律，数据不足就说“样本不足”，不要编造；3) 给出 3 条具体、可执行、低成本的明日改进建议；4) 最后给一句温和、不打鸡血的鼓励。300 字以内、分点。\n以下是我的数据：\n';
+  $('copyBtn').onclick=function(){
+    var text='【专注回收 · 今日数据摘要（在线仿真）】\n'+$('summaryBox').textContent+'\n\n【分析提示词】\n'+L2P;
+    var done=function(){$('copyBtn').textContent='已复制，去粘贴给豆包';setTimeout(function(){$('copyBtn').textContent='复制复盘包（粘贴给豆包做 AI 复盘）'},2200)};
+    if(navigator.clipboard){navigator.clipboard.writeText(text).then(done).catch(fallback)}else{fallback()}
+    function fallback(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){alert('请手动复制')}ta.remove()}
+  };
+
+  $('resetBtn').onclick=function(){location.reload()};
+  render();
+})();
+</script>
+</body>
+</html>
